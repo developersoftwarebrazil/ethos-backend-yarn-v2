@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  name        String
+  email       String       @unique
+  phone       String?
+  password    String
+  role        Role         @default(ALUNO)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  enrollments Enrollment[]
+  courses     Course[]     @relation("CourseInstructor")
+  videos      Video[]      @relation("VideoAuthor")
+  classrooms  Classroom[]  @relation("ClassroomInstructor")
+}
+
+model Course {
+  id           Int          @id @default(autoincrement())
+  title        String
+  description  String
+  instructor   User         @relation("CourseInstructor", fields: [instructorId], references: [id])
+  instructorId Int
+  enrollments  Enrollment[]
+  classrooms   Classroom[]
+  videos       Video[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Enrollment {
+  id          Int        @id @default(autoincrement())
+  student     User       @relation(fields: [studentId], references: [id])
+  studentId   Int
+  course      Course     @relation(fields: [courseId], references: [id])
+  courseId    Int
+  createdAt   DateTime   @default(now())
+  Classroom   Classroom? @relation(fields: [classroomId], references: [id])
+  classroomId Int?
+}
+
+model Classroom {
+  id           Int          @id @default(autoincrement())
+  name         String
+  course       Course       @relation(fields: [courseId], references: [id])
+  courseId     Int
+  instructor   User         @relation("ClassroomInstructor", fields: [instructorId], references: [id])
+  instructorId Int
+  students     Enrollment[] // alunos matriculados nesse curso (referência indireta)
+}
+
+model Video {
+  id          Int       @id @default(autoincrement())
+  title       String
+  slug        String    @unique
+  thumbnail   String
+  url         String
+  isPublished Boolean   @default(false)
+  publishedAt DateTime? @default(now())
+  createdAt   DateTime  @default(now())
+  course      Course    @relation(fields: [courseId], references: [id])
+  courseId    Int
+  author      User      @relation("VideoAuthor", fields: [authorId], references: [id])
+  authorId    Int
+}
+
+enum Role {
+  ALUNO
+  PROFESSOR
+  ADMIN
+}
+
