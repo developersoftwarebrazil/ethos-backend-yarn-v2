@@ -1,0 +1,4 @@
+{
+  "build": "yarn install && yarn build",
+  "start": "yarn start:prod"
+}
