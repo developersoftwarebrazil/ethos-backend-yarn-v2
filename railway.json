@@ -1,4 +1,11 @@
 {
-  "build": "yarn install && yarn build",
-  "start": "yarn start:prod"
+  "build": {
+    "commands": [
+      "yarn install --frozen-lockfile",
+      "yarn build"
+    ]
+  },
+  "start": {
+    "cmd": "yarn start:prod"
+  }
 }
