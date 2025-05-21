@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -15,56 +9,56 @@ datasource db {
 }
 
 model User {
-  id          Int          @id @default(autoincrement())
+  id          String       @id @default(uuid())
   name        String
-  email       String       @unique
+  email       String
   phone       String?
   password    String
   role        Role         @default(ALUNO)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  enrollments Enrollment[]
-  courses     Course[]     @relation("CourseInstructor")
-  videos      Video[]      @relation("VideoAuthor")
   classrooms  Classroom[]  @relation("ClassroomInstructor")
+  courses     Course[]     @relation("CourseInstructor")
+  enrollments Enrollment[]
+  videos      Video[]      @relation("VideoAuthor")
 }
 
 model Course {
-  id           Int          @id @default(autoincrement())
+  id           String       @id @default(uuid())
   title        String
   description  String
-  instructor   User         @relation("CourseInstructor", fields: [instructorId], references: [id])
-  instructorId Int
-  enrollments  Enrollment[]
-  classrooms   Classroom[]
-  videos       Video[]
+  instructorId String
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
+  classrooms   Classroom[]
+  instructor   User         @relation("CourseInstructor", fields: [instructorId], references: [id])
+  enrollments  Enrollment[]
+  videos       Video[]
 }
 
 model Enrollment {
-  id          Int        @id @default(autoincrement())
-  student     User       @relation(fields: [studentId], references: [id])
-  studentId   Int
-  course      Course     @relation(fields: [courseId], references: [id])
-  courseId    Int
+  id          String     @id @default(uuid())
+  studentId   String
+  courseId    String
   createdAt   DateTime   @default(now())
+  classroomId String?
   Classroom   Classroom? @relation(fields: [classroomId], references: [id])
-  classroomId Int?
+  course      Course     @relation(fields: [courseId], references: [id])
+  student     User       @relation(fields: [studentId], references: [id])
 }
 
 model Classroom {
-  id           Int          @id @default(autoincrement())
+  id           String       @id @default(uuid())
   name         String
+  courseId     String
+  instructorId String
   course       Course       @relation(fields: [courseId], references: [id])
-  courseId     Int
   instructor   User         @relation("ClassroomInstructor", fields: [instructorId], references: [id])
-  instructorId Int
-  students     Enrollment[] // alunos matriculados nesse curso (referência indireta)
+  students     Enrollment[]
 }
 
 model Video {
-  id          Int       @id @default(autoincrement())
+  id          String    @id @default(uuid())
   title       String
   slug        String    @unique
   thumbnail   String
@@ -72,10 +66,10 @@ model Video {
   isPublished Boolean   @default(false)
   publishedAt DateTime? @default(now())
   createdAt   DateTime  @default(now())
-  course      Course    @relation(fields: [courseId], references: [id])
-  courseId    Int
+  courseId    String
+  authorId    String
   author      User      @relation("VideoAuthor", fields: [authorId], references: [id])
-  authorId    Int
+  course      Course    @relation(fields: [courseId], references: [id])
 }
 
 enum Role {
